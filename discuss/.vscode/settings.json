@@ -1,0 +1,15 @@
+{
+  "sqltools.connections": [
+    {
+      "askForPassword": false,
+      "connectionTimeout": 15,
+      "database": "discuss_dev",
+      "dialect": "PostgreSQL",
+      "name": "postgres - local",
+      "password": "admin",
+      "port": 5432,
+      "server": "127.0.0.1",
+      "username": "root"
+    }
+  ]
+}
