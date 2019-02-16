@@ -72,6 +72,15 @@ defmodule Discuss.Web do
     end
   end
 
+  def plug do
+    quote do
+      import Plug.Conn
+      import Phoenix.Controller
+
+      alias Discuss.Repo
+    end
+  end
+
   @doc """
   When used, dispatch to the appropriate controller/view/etc.
   """
