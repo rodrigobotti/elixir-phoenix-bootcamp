@@ -1,6 +1,10 @@
 defmodule Discuss.TopicController do
   use Discuss.Web, :controller
   alias Discuss.Topic
+  alias Discuss.Plugs.{RequireAuth}
+
+  plug(RequireAuth when action in [:new, :create, :edit, :update, :delete])
+  plug(:check_topic_owner when action in [:update, :edit, :delete])
 
   @doc """
   See the form to create a new topic
@@ -14,12 +18,15 @@ defmodule Discuss.TopicController do
   Submit the form to create a topic
   """
   def create(conn, %{"topic" => topic}) do
-    insert =
-      %Topic{}
-      |> Topic.changeset(topic)
-      |> Repo.insert()
+    conn.assigns.user
+    |> build_assoc(:topics)
+    |> Topic.changeset(topic)
+    |> Repo.insert()
+    |> handle_created(conn)
+  end
 
-    case insert do
+  defp handle_created(result, conn) do
+    case result do
       {:ok, _topic} ->
         conn
         |> put_flash(:info, "Topic Created")
@@ -34,7 +41,11 @@ defmodule Discuss.TopicController do
   Get a list of all topics
   """
   def index(conn, _params) do
-    topics = Topic |> order_by(desc: :id) |> Repo.all()
+    topics =
+      Topic
+      |> order_by(desc: :id)
+      |> Repo.all()
+
     render(conn, "index.html", topics: topics)
   end
 
@@ -87,6 +98,17 @@ defmodule Discuss.TopicController do
         conn
         |> put_flash(:error, "Couldn't delete topic")
         |> redirect(to: topic_path(conn, :index))
+    end
+  end
+
+  def check_topic_owner(%{params: %{"id" => topic_id}} = conn, _params) do
+    if Repo.get(Topic, topic_id).user_id == conn.assigns.user.id do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You cannot edit that")
+      |> redirect(to: topic_path(conn, :index))
+      |> halt()
     end
   end
 end

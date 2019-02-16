@@ -78,6 +78,7 @@ defmodule Discuss.Web do
       import Phoenix.Controller
 
       alias Discuss.Repo
+      alias Discuss.Router.Helpers
     end
   end
 
