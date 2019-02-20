@@ -101,6 +101,24 @@ defmodule Discuss.TopicController do
     end
   end
 
+  @doc """
+  Topic details
+  """
+  def show(conn, %{"id" => topic_id}) do
+    topic = Repo.get(Topic, topic_id)
+    case topic do
+      nil ->
+        conn
+          |> put_flash(:error, "Topic does not exists")
+          |> redirect(to: topic_path(conn, :index))
+      _ ->
+        render conn, "show.html", topic: topic
+    end
+  end
+
+  @doc """
+  Plug that checks if the topic being changed belongs to the logged in user
+  """
   def check_topic_owner(%{params: %{"id" => topic_id}} = conn, _params) do
     if Repo.get(Topic, topic_id).user_id == conn.assigns.user.id do
       conn

@@ -1,0 +1,51 @@
+<h5><%= @topic.title %></h5>
+
+<div class="input-field">
+  <textarea class="materialize-textarea"></textarea>
+  <button class="btn">Add comment</button>
+  
+  <hr>
+
+  <ul class="collection">
+  </ul>
+</div>
+
+<script>
+
+  const commentTemplate = ({ content, user }) => `
+    <li class="collection-item">
+      ${content}
+      <div class="secondary-content">
+        ${user ? user.email : 'Anonymous'}
+      </div>
+    </li>`
+
+  const getList = () => document.querySelector('.collection')
+
+  const getTextArea = () => document.querySelector('textarea')
+
+  const renderComments = ({ comments }) => { 
+    const renderedComments = comments.map(commentTemplate).join('')
+    getList().innerHTML = renderedComments
+  }
+
+  const renderComment = ({ comment }) => {
+    const renderedComment = commentTemplate(comment)
+    getList().innerHTML += renderedComment
+    getTextArea().value = ''
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const topicId = <%= @topic.id %>
+    const { channel, subscription } = window.createSocket(topicId)
+      
+    subscription.receive('ok', renderComments)
+    
+    channel.on(`comments:${topicId}:new`, renderComment)
+
+    document.querySelector('button').addEventListener('click', () => {
+      const content = getTextArea().value
+      channel.push('comment:add', { content })
+    })
+  })
+</script>
